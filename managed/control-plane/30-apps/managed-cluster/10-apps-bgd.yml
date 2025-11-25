@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bgd
+  namespace: managed-cluster
+spec:
+  destination:
+    namespace: bgd
+    name: managed-cluster
+  source:
+    path: apps/base
+    repoURL: https://github.com/gitops-examples/openshift-gitops-agent
+    targetRevision: HEAD
+  project: managed-cluster
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true

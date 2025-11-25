@@ -1,0 +1,4 @@
+namespace: openshift-gitops-operator
+
+resources:
+- 10-ns-project.yml

@@ -1,0 +1,13 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: managed-cluster
+  annotations:
+    openshift.io/display-name: Argo CD Agent for Managed Cluster
+    openshift.io/description: Argo CD Agent for Managed Cluster
+  labels:
+    kubernetes.io/metadata.name: managed-cluster
+spec:
+  finalizers:
+    - kubernetes
+---

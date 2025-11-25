@@ -1,0 +1,5 @@
+namespace: openshift-gitops-operator
+
+resources:
+- 10-og-gitops.yml
+- 20-sub-gitops.yml

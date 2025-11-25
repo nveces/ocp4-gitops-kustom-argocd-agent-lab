@@ -1,0 +1,3 @@
+resources:
+- 10-ns-argocd-control-plane.yml
+- 20-ns-managed-cluster.yml

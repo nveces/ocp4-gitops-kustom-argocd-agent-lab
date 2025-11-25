@@ -1,0 +1,13 @@
+apiVersion: project.openshift.io/v1
+kind: Project
+metadata:
+  name: openshift-gitops-operator
+  annotations:
+    openshift.io/display-name: OpenShift GitOps Operator
+    openshift.io/description: OpenShift GitOps Operator namespace
+  labels:
+    kubernetes.io/metadata.name: openshift-gitops-operator
+spec:
+  finalizers:
+    - kubernetes
+---

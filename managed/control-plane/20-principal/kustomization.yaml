@@ -1,0 +1,7 @@
+namespace: argocd
+
+resources:
+- 10-argocd.yml
+- 20-svc-proxy-service.yml
+- 30-app-project.yml
+- 40-route.yml
