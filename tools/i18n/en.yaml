@@ -1,0 +1,181 @@
+stp_name_01: "Log into the 'control plane' Cluster"
+stp_name_02: "Create Project for GitOps Operator"
+stp_name_03: "Install GitOps Operator"
+stp_name_04: "Check GitOps Pods"
+stp_name_05: "Create the required Projects"
+stp_name_06: "Switch to 'argocd' project"
+stp_name_07: "Rename Context"
+stp_name_08: "Init PKI"
+stp_name_09: "Issue Certificate for Principal"
+stp_name_10: "Principal Certificate resource-proxy"
+stp_name_11: "Provision ArgoCD Agent"
+stp_name_12: "Check Agent Pods"
+stp_name_13: "Create Secret argocd-redis"
+stp_name_14: "Restart Principal (if needed)"
+stp_name_15: "Check Pods"
+stp_name_16: "Create Agent Configuration on Principal"
+stp_name_17: "Setup Complete: 'control-plane' Cluster"
+stp_name_18: "Log into the 'managed' Cluster"
+stp_name_19: "Create Project for GitOps Operator"
+stp_name_20: "Install GitOps Operator"
+stp_name_21: "Check GitOps Pods"
+stp_name_22: "Create the 'argocd' project"
+stp_name_23: "Create the 'argocd' instance"
+stp_name_24: "Check ArgoCD Pods"
+stp_name_25: "Switch to 'argocd' project"
+stp_name_26: "Rename 'managed-cluster' Context"
+stp_name_27: "Create Secret argocd-redis"
+stp_name_28: "Install the Agent PKI"
+stp_name_29: "Propagate the CA"
+stp_name_30: "Review $SUBDOMAIN variable"
+stp_name_31: "Deploy the Agent on managed cluster"
+stp_name_32: "Check Agent Log"
+stp_name_33: "Validate the AppProject"
+stp_name_34: "Setup Complete: 'managed' Cluster"
+stp_name_35: "Switch to principal context"
+stp_name_36: "Validate the Application"
+stp_name_37: "Deploy Application"
+stp_name_38: "Verify Application"
+stp_name_39: "Switch to managed context"
+stp_name_40: "Validate Application"
+stp_name_finish: "Completed"
+stp_desc_01: "Log into the 'control plane' cluster (hub cluster) using the oc command."
+stp_desc_02: "Create the namespace for the OpenShift GitOps Operator."
+stp_desc_03: |
+  ⚠️ IMPORTANT: This will install the Operator with additional configuration in the Subscription including the option
+  which disables the default OpenShift GitOps instance in the openshift-gitops namespace.
+  Do not run this command in a cluster where OpenShift GitOps is already installed and being actively used.
+stp_desc_04: "Wait for the operator to be installed and come up, you should see the operator pod running."
+stp_desc_05: |
+    Now, create the required namespaces on the 'control-plane' cluster:
+    - argocd
+    - managed-cluster
+stp_desc_06: "Now, switch to the 'argocd' namespace."
+stp_desc_07: |
+    The 'argocd-agentctl' CLI makes heavy use of Kubernetes contexts, for clarity and simplification it is recommended to rename your local context.
+
+    ℹ️  NOTE: If you find it confusing to rename the context by replacing the tokens you can run 'oc config get-contexts' to view all of the contexts available.
+    The one you are currently using which we want to rename is marked with an asterix (i.e. *).
+stp_desc_08: |
+    The Argo CD Agent requires certificates to be provisioned on both the Control Plane and Agent clusters.
+    These certificates are used to manage authorization and trust between the clusters. Longer term Red Hat Advanced Cluster Manager will provide an add-on
+    that will manage this for you automatically but for now we will use the argocd-agentctl CLI to do this.
+
+    Initialize the PKI with the following command.
+stp_desc_09: |
+    Next issue a certificate that will be used to expose the Principal outside of the cluster.
+    In this demo we will be using an OpenShift Route to expose the Principal.
+
+    ℹ️  NOTE: Upstream documentation which is more Kubernetes oriented is using either a Node Port or LoadBalancer service to expose the Principal.
+    In OpenShift a Route provides a more secure and slightly less costly way to accomplish this.
+    Routes will be the default when the Agent reaches General Availability.
+stp_desc_10: |
+    We need to provision the certificate for the Principals resource-proxy, this is to enable the Argo CD server pod to
+    communicate with the Principal to retrieve resources, for example when viewing manifests in the Argo CD UI.
+
+stp_desc_11: |
+    Provision the Argo CD Control Plane including Principal.
+
+    ℹ️  NOTE: This will create an Argo CD instance where users in the cluster-admins group have full access to Argo CD.
+    If your cluster does not have this group you can either tweak the RBAC to match an existing group your user belongs
+    to or create the group with 'oc adm groups new cluster-admins <user>'.
+
+stp_desc_12: "Validate that all of the pods are running except for the Principal:"
+stp_desc_13: |
+    The Principal is failing because it requires the password for Redis but we need to have redis deployed by the operator
+    before it can be created. Go ahead and create the password."
+stp_desc_14: "And then restart the principal (if needed)."
+stp_desc_15: |
+    And then validate all pods running including the Principal this time.
+
+    ℹ️  NOTE: Notice there is no 'application-controller' as would be expected in a typical Argo CD installation.
+    This has been disabled on the 'Control Plane' as the application-controller will run on managed-clusters with
+    the Principal handling Application resources instead of the application-controller.
+stp_desc_16: |
+    Finally we can create the Agent configuration on the Principal.
+
+    ℹ️  NOTE: The 'username' and 'password' are required by the command but not actually used, these parameters will be removed in a future release.
+stp_desc_17: |
+    ✅ We have completed the Principal installation, now let’s install the Agent on the managed-cluster.
+
+stp_desc_18: "Log into the 'managed' Cluster (spoke cluster) using the oc command."
+stp_desc_19: "Create the project for the OpenShift GitOps Operator."
+stp_desc_20: "Install The OpenShift GitOps Operator."
+stp_desc_21: "Verify that all of the GitOps pods are running."
+stp_desc_22: "Create the 'argocd' project"
+stp_desc_23: |
+    Create the 'argocd' instance.
+    Wait until the operator pod then deploy the argocd instance to support the Agent.
+stp_desc_24: |
+    Verify that all of the pods are running.
+
+    ℹ️  NOTE: There is no server pod here since the UI and API is provided by the server pod on the Control Plane cluster
+    that we installed previously.
+stp_desc_25: "Switch to the argocd namespace."
+stp_desc_26: "Rename the context to 'managed-cluster'."
+stp_desc_27: "Create the Redis password again so the Agent can access Redis."
+stp_desc_28: "And then run the following command to install the Agent PKI."
+stp_desc_29: |
+    Now you will need to propagate the CA certificate stored in the 'argocd-agent-ca' secret on the Principal to
+    the managed-cluster."
+stp_desc_30: "Ensure you still have the SUBDOMAIN variable set for the Control Plane cluster where the Principal resides."
+stp_desc_31: |
+    Deploy the Agent on the remote cluster.
+
+    ℹ️  NOTE: If you do not have 'envsubst' available, remove it from the piped list of commands and manually edit
+    the file 'managed/managed-cluster/20-agent/10-base/kustomization.yaml' to point the '$SUBDOMAIN' variable to
+    the Principal route on the Control Plane cluster before executing the command below.
+
+stp_desc_32: |
+    Wait a couple of minutes and then check the logs of the agent pod to ensure there are no unexpected errors:
+
+stp_desc_33: |
+    Validate that the AppProject managed-cluster has been propagated from the Principal to the Agent.
+    ⚠️  If the AppProject doesn’t appear check the logs of the Agent pod on the Managed Cluster and the logs on
+    the Principal pod in the Control Plane for any errors.
+
+stp_desc_34: |
+    ✅ We have completed the Agent installation on the managed cluster, now let’s deploy a test Application.
+stp_desc_35: "Switch back to the principal context."
+stp_desc_36: |
+    The Argo CD Agent uses a Apps-in-Any-Namespace to map Applications to clusters so we will deploy
+    a sample application in the 'managed-cluster' namespace on the Principal.
+    Validate the Application we will deploy.
+    Notice that the 'spec.destination.name' is set to 'managed-cluster'.
+stp_desc_37: "Deploy the application."
+stp_desc_38: |
+    Verify that the Application has been synched and is healthy, this may take a couple of minutes.
+
+    ℹ️  NOTE: You can also check this in the 'Argo CD UI' on the Principal.
+stp_desc_39: "Switch back to the 'managed-cluster'."
+stp_desc_40: "Validate that the 'bgd' Application resources have been deployed on the 'managed-cluster'."
+stp_desc_finish: |
+  ✅  We have performed a basic, non-production deployment of the new Argo CD Agent using the Managed mode of the Agent.
+  🎉 Wizard completed successfully.
+
+  This wizard is based on the {url_blog}.
+  Thank Gerald Nunn for writing this excellent blog post and providing the basis for this PoC wizard!
+welcome_msg: "🚀  PoC Wizard: ArgoCD Agent Managed Mode"
+next_option: "Next (Execute)"
+dryrun_option: "Next (Dry-run)"
+previous_option: "Previous (Back)"
+cancel_option: "Cancel (Exit)"
+finish_action: "Finish"
+action_prompt: "Select an action:"
+welcome_title: "🚀 PoC Wizard: ArgoCD Agent Managed Mode 🚀"
+breadcrumb_base: "Breadcrumb >"
+status_msg_init: "Welcome to PoC Wizard."
+status_label: "State:"
+step_label: "Step"
+description_label: "Description:"
+command_label: "Comand:"
+executing_message: "RUNNING:"
+step_complete_message: "✅ Step {step_num} '{step_name}' Completed. Ready for the next step."
+completed_wizard_msg: "WIZARD Completed. All steps executed successfully!"
+break_wizard_msg: "❌ Interruption detected. Wizard aborted!"
+step_by_step: "Step {step_num} of {total_steps}"
+wizard_cancel_by_user: "Wizard cancelled by the user!!"
+back_step: "Returning to step {step_index}."
+label_executing_dryrun: "DRY-RUN EXECUTING"
+url_blog: "https://developers.redhat.com/blog/2025/10/06/using-argo-cd-agent-openshift-gitops"
+session_loaded_message: "Session Loaded: Resuming from step {step}."

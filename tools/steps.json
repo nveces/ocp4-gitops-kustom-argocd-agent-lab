@@ -1,0 +1,322 @@
+[
+    {
+        "name": "stp_name_01",
+        "description": "stp_desc_01",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "echo 'oc login -u <cluster-admin-username> -p <cluster-admin-password> <control-plane-cluster-api-url> or oc login --token=<token-admin-user> --server=<control-plane-cluster-api-url>'"
+    },
+    {
+        "name": "stp_name_02",
+        "description": "stp_desc_02",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc apply -k ../operator/10-base"
+    },
+    {
+        "name": "stp_name_03",
+        "description": "stp_desc_03",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc apply -k ../operator/20-operator"
+    },
+    {
+        "name": "stp_name_04",
+        "description": "stp_desc_04",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc get pods -n openshift-gitops-operator"
+    },
+    {
+        "name": "stp_name_05",
+        "description": "stp_desc_05",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc apply -k ../managed/control-plane/10-base"
+    },
+    {
+        "name": "stp_name_06",
+        "description": "stp_desc_06",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc project argocd"
+    },
+    {
+        "name": "stp_name_07",
+        "description": "stp_desc_07",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "script": "01-cluster-setup.sh",
+        "params": "-f switch_context_principal",
+        "display_lines": "61,66"
+    },
+    {
+        "name": "stp_name_08",
+        "description": "stp_desc_08",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "argocd-agentctl pki init --principal-context principal --principal-namespace argocd"
+    },
+    {
+        "name": "stp_name_09",
+        "description": "stp_desc_09",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "script": "01-cluster-setup.sh",
+        "params": "-f create_issue_principal",
+        "display_lines": "73,77"
+    },
+    {
+        "name": "stp_name_10",
+        "description": "stp_desc_10",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "argocd-agentctl pki issue resource-proxy --dns argocd-agent-resource-proxy.argocd.svc.cluster.local --principal-context principal --principal-namespace argocd"
+    },
+    {
+        "name": "stp_name_11",
+        "description": "stp_desc_11",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc apply -k ../managed/control-plane/20-principal"
+    },
+    {
+        "name": "stp_name_12",
+        "description": "stp_desc_12",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc get pods -n argocd"
+    },
+    {
+        "name": "stp_name_13",
+        "description": "stp_desc_13",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "script": "01-cluster-setup.sh",
+        "params": "-f create_secret_argocd_redis",
+        "display_lines": "88,90"
+    },
+    {
+        "name": "stp_name_14",
+        "description": "stp_desc_14",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc rollout restart deploy/argocd-agent-principal -n argocd"
+    },
+    {
+        "name": "stp_name_15",
+        "description": "stp_desc_15",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc get pods -n argocd"
+    },
+    {
+        "name": "stp_name_16",
+        "description": "stp_desc_16",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "script": "01-cluster-setup.sh",
+        "params": "-f create_agent_on_principal",
+        "display_lines": "92,99"
+    },
+    {
+        "name": "stp_name_17",
+        "description": "stp_desc_17",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "echo 'control-plane cluster setup complete.'"
+    },
+    {
+        "name": "stp_name_18",
+        "description": "stp_desc_18",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "echo 'oc login -u <cluster-admin-username> -p <cluster-admin-password> <managed-cluster-api-url>'"
+    },
+    {
+        "name": "stp_name_19",
+        "description": "stp_desc_19",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc apply -k ../operator/10-base"
+    },
+    {
+        "name": "stp_name_20",
+        "description": "stp_desc_20",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc apply -k ../operator/20-operator"
+    },
+    {
+        "name": "stp_name_21",
+        "description": "stp_desc_21",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc get pods -n openshift-gitops-operator"
+    },
+    {
+        "name": "stp_name_22",
+        "description": "stp_desc_22",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc apply -k ../managed/managed-cluster/10-argocd/10-base"
+    },
+    {
+        "name": "stp_name_23",
+        "description": "stp_desc_23",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc apply -k ../managed/managed-cluster/10-argocd/20-argocd-instance"
+    },
+    {
+        "name": "stp_name_24",
+        "description": "stp_desc_24",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc get pods -n argocd"
+    },
+    {
+        "name": "stp_name_25",
+        "description": "stp_desc_25",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc project argocd"
+    },
+    {
+        "name": "stp_name_26",
+        "description": "stp_desc_26",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "script": "01-cluster-setup.sh",
+        "params": "-f switch_context_managed_cluster",
+        "display_lines": "70,81"
+    },
+    {
+        "name": "stp_name_27",
+        "description": "stp_desc_27",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "script": "01-cluster-setup.sh",
+        "params": "-f create_secret_argocd_redis",
+        "display_lines": "88,90"
+    },
+    {
+        "name": "stp_name_28",
+        "description": "stp_desc_28",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "argocd-agentctl pki issue agent managed-cluster --principal-context principal --principal-namespace argocd --agent-context managed-cluster --agent-namespace argocd --upsert"
+    },
+    {
+        "name": "stp_name_29",
+        "description": "stp_desc_29",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "argocd-agentctl pki propagate managed-cluster --principal-context principal --principal-namespace argocd --agent-context managed-cluster --agent-namespace argocd"
+    },
+    {
+        "name": "stp_name_30",
+        "description": "stp_desc_30",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "echo $SUBDOMAIN"
+    },
+    {
+        "name": "stp_name_31",
+        "description": "stp_desc_31",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "script": "01-cluster-setup.sh",
+        "params": "-f deploy_agent_on_remote_cluster",
+        "display_lines": "101,103"
+    },
+    {
+        "name": "stp_name_32",
+        "description": "stp_desc_32",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc logs deploy/argocd-agent-agent -n argocd"
+    },
+    {
+        "name": "stp_name_33",
+        "description": "stp_desc_33",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc get appproject -n argocd"
+    },
+    {
+        "name": "stp_name_34",
+        "description": "stp_desc_34",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "echo 'control-plane cluster setup complete.'"
+    },
+    {
+        "name": "stp_name_35",
+        "description": "stp_desc_35",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc config use-context principal"
+    },
+    {
+        "name": "stp_name_36",
+        "description": "stp_desc_36",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "cat ../managed/control-plane/30-apps/managed-cluster/10-apps-bgd.yml"
+    },
+    {
+        "name": "stp_name_37",
+        "description": "stp_desc_37",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc apply -f ../managed/control-plane/30-apps/managed-cluster/10-apps-bgd.yml -n managed-cluster"
+    },
+    {
+        "name": "stp_name_38",
+        "description": "stp_desc_38",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "oc get apps -n managed-cluster"
+    },
+    {
+        "name": "stp_name_39",
+        "description": "stp_desc_39",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc config use-context managed-cluster"
+    },
+    {
+        "name": "stp_name_40",
+        "description": "stp_desc_40",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "cluster": "managed",
+        "command": "oc get all -n bgd"
+    },
+    {
+        "name": "stp_name_finish",
+        "description": "stp_desc_finish",
+        "can_go_back": true,
+        "can_dryrun": true,
+        "command": "echo 'Bye bye!'"
+    }
+]

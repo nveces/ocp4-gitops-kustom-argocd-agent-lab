@@ -14,6 +14,7 @@ import sys
 import os
 import time
 import json
+import yaml
 import logging
 import subprocess
 import time, datetime
@@ -21,7 +22,10 @@ import pathlib
 import rich
 from rich.console import Console
 from rich.panel import Panel
+from rich.markup import render # We use render to interpret the markup of rich before printing
+from rich.text import Text
 from rich.layout import Layout
+from inquirer.prompt import prompt
 import inquirer
 
 # ============================ #
@@ -37,7 +41,7 @@ DEFAULT_LANG_PATH = "i18n"
 #os.path.basename
 STEPS = []
 STEP_EXECUTION_STATUS = {}
-
+DYNAMIC_VARS={}
 # Rich Console Initialization
 console = Console()
 status_message = "Initializing..."
@@ -61,10 +65,20 @@ FILELOG_EXT  =".log"
 FILE_ENCODING = 'utf-8'
 FILELOG_PATH=''  # To be initialized in _init_logger() as PATH_LOGS + os.path.basename( __file__)[:-3] +
 #
+CLUSTER_A_COLOR = "blue"    # To control-plane
+CLUSTER_B_COLOR = "magenta" # To managed
+# Step Styles
 STL_DEFAULT = "bold white"               # Default Step
 STL_CURRENT_STEP = "bold green reverse"  # Current Step
 STL_DRYRUN_EXECUTED_STEP = "italic cyan" # Dry run Completed Step
 STL_COMPLETED_STEP = "dim cyan"          # Completed Step
+
+STL_A_COMPLETED_STEP  = f"dim white on {CLUSTER_A_COLOR}"
+STL_B_COMPLETED_STEP  = f"dim white on {CLUSTER_B_COLOR}"
+STL_A_DRYRUN_EXECUTED = f"dim italic {CLUSTER_A_COLOR}"
+STL_B_DRYRUN_EXECUTED = f"dim italic {CLUSTER_B_COLOR}"
+STL_A_PENDING_STEP    = f"white on {CLUSTER_A_COLOR} dim"
+STL_B_PENDING_STEP    = f"bold green"
 #
 # Rich attributes
 # bold       [bold]Texto[/]
@@ -159,19 +173,38 @@ def get_script_content(file_path: str, line_range: str) -> str:
     except FileNotFoundError:
         return f"[bold red]\U0001f6a8 ERROR: File not found: '{file_path}'.[/]"
 
-
 def load_localization(lang=DEFAULT_LANG):
+    """Load localization literals from the specified language JSON file."""
+    #load_localization_json(lang)
+    load_localization_yaml(lang)
+
+def load_localization_json(lang=DEFAULT_LANG):
     """Load localization literals from the specified language JSON file."""
     global I18N, DEFAULT_LANG_PATH
     i18n_resources = pathlib.Path(__file__).resolve().parent / DEFAULT_LANG_PATH / lang
     try:
-        filename = f"{i18n_resources}.json"
-        with open(filename, 'r', encoding=FILE_ENCODING) as f:
+        file_path = f"{i18n_resources}.json"
+        with open(file_path, 'r', encoding=FILE_ENCODING) as f:
             I18N = json.load(f)
     except FileNotFoundError:
         # Handling error if the file is not found
-        print(f"\n\U0001f6a8 ERROR: The file for language '{lang}' was not found. Review '{filename}'.")
+        print(f"\n\U0001f6a8 ERROR: The file for language '{lang}' was not found. Review '{file_path}'.")
         sys.exit(1)
+
+def load_localization_yaml(lang=DEFAULT_LANG):
+    """Load localization literals from the specified language JSON file."""
+    global I18N, DEFAULT_LANG_PATH
+    i18n_resources = pathlib.Path(__file__).resolve().parent / DEFAULT_LANG_PATH / lang
+    try:
+        file_path = f"{i18n_resources}.yaml"
+        with open(file_path, 'r', encoding='utf-8') as f:
+            # Load YAML content into I18N dictionary
+            I18N = yaml.safe_load(f)
+    except FileNotFoundError:
+        # Handling error if the file is not found
+        print(f"\n\U0001f6a8 ERROR: The file for language '{lang}' was not found. Review '{file_path}'.")
+        sys.exit(1)
+
 
 def load_steps_data(steps_file_path: pathlib.Path) -> list:
     """Load steps data from a JSON file."""
@@ -225,7 +258,10 @@ def init_global_variables(steps_file_name="steps.json",session_file_name="sessio
     processed_steps = []
     for step_data in raw_steps:
         description_key = step_data.pop("description")
-        step_data["description"] = i18n(description_key)
+        if description_key == "stp_desc_finish":
+            step_data["description"] = i18n(description_key).format(url_blog=i18n("url_blog"))
+        else:
+            step_data["description"] = i18n(description_key)
         name_key = step_data.pop("name")
         step_data["name"] = i18n(name_key)
         #
@@ -283,15 +319,19 @@ def render_header(step_index):
     # 2.1. Creating the Breadcrumb Steps
     breadcrumb = []
     for i, step in enumerate(STEPS):
-        style = STL_DEFAULT
+        cluster_type = step.get('cluster', 'control-plane')
+        #style = STL_DEFAULT
+        style= STL_DEFAULT if cluster_type == 'control-plane' else STL_B_PENDING_STEP
         if i == step_index:
             style = STL_CURRENT_STEP
         elif i < step_index:
             if STEP_EXECUTION_STATUS.get(i) == "dry":
                 # Current Step after a dry run execution
-                style = STL_DRYRUN_EXECUTED_STEP
+                #style = STL_DRYRUN_EXECUTED_STEP
+                style = STL_A_DRYRUN_EXECUTED if cluster_type == 'control-plane' else STL_B_DRYRUN_EXECUTED
             else:
-                style = STL_COMPLETED_STEP
+                #style = STL_COMPLETED_STEP
+                style = STL_A_COMPLETED_STEP if cluster_type == 'control-plane' else STL_B_COMPLETED_STEP
 
         breadcrumb.append(f"[{style}]{step['name']}[/]")
 
@@ -301,7 +341,7 @@ def render_header(step_index):
     #
     panel_content = f"[bold white]{i18n("breadcrumb_base")}[/]\n{' -> '.join(breadcrumb)}\n\n"
     panel_content += f"[bold blue]" + i18n('step_by_step').format(step_num=(step_index + 1),total_steps=len(STEPS)) + ":[/]\n"
-    panel_content += f"[yellow]{step_info['description']}[/]\n\n"
+    panel_content += f"[yellow]{step_info['description']}[/]\n"
     panel_content += f"[bold red]{i18n("command_label")}[/]\n[italic]{script_content}[/]\n"
 
     # 2.3. Printing the Panel Header
@@ -313,7 +353,7 @@ def render_header(step_index):
                         subtitle_align="center",
                         border_style="rgb(0,255,128)",
                         box=rich.box.DOUBLE,
-                        height=20,
+                        height=25,
                         expand=True))
 
     # Show status message (updated after execution)
@@ -333,16 +373,41 @@ def get_command_or_script_from_step(step: dict) -> str:
     #
     return step_command
 
+def ask_options_input(step_info):
+    """Ask for input variables defined in the step."""
+    global DYNAMIC_VARS
+
+    console.print(f"\n[bold yellow]{i18n(step_info['name'])}[/]")
+    questions = []
+    for var_def in step_info['input_vars']:
+         question = inquirer.Text(
+                name=var_def['var_name'],
+                message=i18n(var_def['message']),
+                default=var_def.get('default', '') )
+
+    questions.append(
+        inquirer.Text('name', message="What's your name")
+    )
+
+    answers = prompt(questions)
+    if answers:
+        logger.debug(answers)
+        logger.debug(answers['name'])
+
 
 # 3. Interactive Menu Function using Inquirer
 def ask_options(step_index):
     """Show the Next/Previous/Cancel interactive menu."""
-
     global current_step, status_message
-    logger.debug("ask_options called for step_index: '%d' - '%d'", step_index,current_step)
     step_info = STEPS[step_index]
     last_step_index = len(STEPS) - 1
     raw_options = []
+
+    if 'input_vars' in step_info:
+        ask_options_input(step_info)
+        current_step += 1
+        return
+
     # Building the options dynamically
     if step_index < last_step_index:
         raw_options.append((i18n("next_option"), "next"))
@@ -382,7 +447,7 @@ def ask_options(step_index):
 
     if action == "next":
         step_command = get_command_or_script_from_step(STEPS[step_index])
-        logger.debug("Executing command next --: %s", step_command)
+        logger.debug("Executing command next --:\n %s", step_command)
         console.print(f"\n[bold green]{i18n("executing_message")}: {step_command}[/]")
         # Execute the command/script of the current step
         result = subprocess.run(
@@ -393,7 +458,7 @@ def ask_options(step_index):
                 text=True
                 #,executable="/bin/bash"
         )
-        logger.debug("Executing command next --: `%s' - %d", result.stdout, result.returncode)
+        logger.debug("Executing command next --:Return code: %d \n%s", result.returncode,result.stdout)
         console.print(f"\nOutput:\n{result.stdout}")
         #time.sleep(5)
         status_message = f"[green]\u2705 " + i18n('step_complete_message').format(
@@ -406,8 +471,11 @@ def ask_options(step_index):
 
     elif action == "dryrun":
         step_command = get_command_or_script_from_step(STEPS[step_index])
-        logger.debug("Executing command dryrun --: %s", step_command)
+        logger.debug("Executing command dryrun --:\n%s", step_command)
         # Simulare execute the command of the current step
+        # slow_print( f"\n[bold green]{i18n("label_executing_dryrun")}: {step_command}[/]",
+        #     delay=0.04 # Set a delay of 0.04 seconds between each character
+        # )
         console.print(f"\n[bold green]{i18n("label_executing_dryrun")}: {step_command}[/]")
         #
         #time.sleep(2.5)  # Simulate some delay for dry run execution
@@ -430,6 +498,38 @@ def ask_options(step_index):
 
     if action in ["next", "dryrun", "previous"]:
         save_session(GLOBAL_SESSION_FILE, current_step, STEP_EXECUTION_STATUS)
+
+def slow_print(text: str, delay: float = 0.03, new_line: bool = True):
+    """
+    Imprime una cadena de texto carácter por carácter para simular la escritura.
+
+    Args:
+        text (str): La cadena a imprimir (puede contener markup de rich).
+        delay (float): Pausa en segundos entre caracteres.
+        new_line (bool): Si es True, añade un salto de línea al final.
+    """
+    # 1. Renderizar el markup de Rich para obtener el objeto Text (maneja estilos y emojis)
+    #rich_text = console.render_str(text)
+    rich_text = Text.from_markup(text)
+
+    # 2. Iterar sobre los caracteres (incluyendo estilos)
+    for segment in rich_text.segments:
+        # El contenido es el string del segmento.
+        content = segment.text
+        # El estilo (Style) de Rich se aplica a todo el segmento.
+        style = segment.style
+
+        # 3. Iterar sobre cada carácter del segmento
+        for char in content:
+            # Imprimir el carácter con su estilo correspondiente
+            console.print(char, end="", style=style, soft_wrap=False)
+            sys.stdout.flush() # Forzar la salida inmediata
+            time.sleep(delay)
+
+    if new_line:
+        print() # Añadir el salto de línea al final
+
+# NOTA: La función console.render_str() se encargará de decodificar tu markup ([bold yellow]...)
 
 # ================== #
 # ==== __main__ ==== #

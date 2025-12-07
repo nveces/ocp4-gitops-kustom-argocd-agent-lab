@@ -1,0 +1,182 @@
+stp_name_01: "Accedir al Clúster 'control-plane'"
+stp_name_02: "Crear Projecte per a l'Operador GitOps"
+stp_name_03: "Instal·lar Operador GitOps"
+stp_name_04: "Verificar Pods de GitOps"
+stp_name_05: "Crear els Projectes Requerits"
+stp_name_06: "Canviar al Projecte 'argocd'"
+stp_name_07: "Canviar el nom del Context"
+stp_name_08: "Inicialitzar PKI"
+stp_name_09: "Emetre Certificat per al Principal"
+stp_name_10: "Certificat resource-proxy Principal"
+stp_name_11: "Provisionar Agent ArgoCD"
+stp_name_12: "Verificar Pods de l'Agent"
+stp_name_13: "Crear Secret argocd-redis"
+stp_name_14: "Reiniciar Principal (si és necessari)"
+stp_name_15: "Verificar Pods"
+stp_name_16: "Crear Configuració de l'Agent al Principal"
+stp_name_17: "Configuració Completa: Clúster 'control-plane'"
+stp_name_18: "Accedir al Clúster 'managed'"
+stp_name_19: "Crear Projecte per a l'Operador GitOps"
+stp_name_20: "Instal·lar Operador GitOps"
+stp_name_21: "Verificar Pods de GitOps"
+stp_name_22: "Crear el Projecte 'argocd'"
+stp_name_23: "Crear la instància 'argocd'"
+stp_name_24: "Verificar Pods d'ArgoCD"
+stp_name_25: "Canviar al Projecte 'argocd'"
+stp_name_26: "Canviar el nom del Context 'managed-cluster'"
+stp_name_27: "Crear Secret argocd-redis"
+stp_name_28: "Instal·lar el PKI de l'Agent"
+stp_name_29: "Propagar la CA"
+stp_name_30: "Revisar la variable $SUBDOMAIN"
+stp_name_31: "Desplegar l'Agent al clúster gestionat"
+stp_name_32: "Verificar Log de l'Agent"
+stp_name_33: "Validar l'AppProject"
+stp_name_34: "Configuració Completa: Clúster 'managed'"
+stp_name_35: "Canviar a context principal"
+stp_name_36: "Validar l'Aplicació"
+stp_name_37: "Desplegar Aplicació"
+stp_name_38: "Verificar Aplicació"
+stp_name_39: "Canviar a context gestionat"
+stp_name_40: "Validar Aplicació"
+stp_name_finish: "Completat"
+
+stp_desc_01: "Accediu al clúster 'control-plane' (clúster hub) utilitzant la comanda oc."
+stp_desc_02: "Creeu el namespace per a l'Operador OpenShift GitOps."
+stp_desc_03: |
+  ⚠️ IMPORTANT: Això instal·larà l'Operador amb configuració addicional a la Subscripció, inclosa l'opció
+  que deshabilita la instància predeterminada d'OpenShift GitOps al namespace openshift-gitops.
+  No executeu aquesta comanda en un clúster on OpenShift GitOps ja estigui instal·lat i en ús actiu.
+stp_desc_04: "Espereu que l'operador s'instal·li i s'iniciï; hauríeu de veure el pod de l'operador en execució."
+stp_desc_05: |
+  Ara, creeu els namespaces requerits al clúster 'control-plane':
+  - argocd
+  - managed-cluster
+stp_desc_06: "Ara, canvieu al namespace 'argocd'."
+stp_desc_07: |
+  La CLI 'argocd-agentctl' fa un ús intensiu dels contextos de Kubernetes; per a més claredat i simplificació, es recomana canviar el nom del vostre context local.
+
+  ℹ️ NOTA: Si us resulta confús canviar el nom del context reemplaçant els tokens, podeu executar 'oc config get-contexts' per veure tots els contextos disponibles.
+  El que esteu utilitzant actualment, que volem canviar el nom, està marcat amb un asterisc (és a dir, *).
+stp_desc_08: |
+  L'Agent Argo CD requereix que es provisionin certificats tant al Clúster de Control Plane com als Clústers d'Agent.
+  Aquests certificats s'utilitzen per gestionar l'autorització i la confiança entre els clústers. A llarg termini, Red Hat Advanced Cluster Manager proporcionarà un complement
+  que gestionarà això automàticament, però per ara utilitzarem la CLI argocd-agentctl per fer-ho.
+
+  Inicialitzeu el PKI amb la següent comanda.
+stp_desc_09: |
+  A continuació, emeteu un certificat que s'utilitzarà per exposar el Principal fora del clúster.
+  En aquesta demostració, utilitzarem una OpenShift Route per exposar el Principal.
+
+  ℹ️ NOTA: La documentació upstream, més orientada a Kubernetes, utilitza un servei Node Port o LoadBalancer per exposar el Principal.
+  A OpenShift, una Route proporciona una manera més segura i lleugerament menys costosa d'aconseguir-ho.
+  Les Routes seran el mètode predeterminat quan l'Agent arribi a la Disponibilitat General (GA).
+stp_desc_10: |
+  Necessitem provisionar el certificat per al resource-proxy del Principal, això és per permetre que el pod del servidor Argo CD
+  es comuniqui amb el Principal per recuperar recursos, per exemple, en veure manifestos a la UI d'Argo CD.
+
+stp_desc_11: |
+  Provisió el Control Plane d'Argo CD, inclòs el Principal.
+
+  ℹ️ NOTA: Això crearà una instància d'Argo CD on els usuaris al grup cluster-admins tenen accés total a Argo CD.
+  Si el vostre clúster no té aquest grup, podeu ajustar l'RBAC perquè coincideixi amb un grup existent al qual pertanyi el vostre usuari
+  o crear el grup amb 'oc adm groups new cluster-admins <usuari>'.
+
+stp_desc_12: "Valideu que tots els pods estiguin en execució, excepte el Principal:"
+stp_desc_13: |
+  El Principal està fallant perquè requereix la contrasenya de Redis, però necessitem que Redis sigui desplegat per l'operador
+  abans que es pugui crear el secret. Continueu i creeu la contrasenya.
+stp_desc_14: "I després reinicieu el Principal (si és necessari)."
+stp_desc_15: |
+  I després valideu que tots els pods estiguin en execució, inclòs el Principal aquesta vegada.
+
+  ℹ️ NOTA: Observeu que no hi ha 'application-controller' com s'esperaria en una instal·lació típica d'Argo CD.
+  Això s'ha deshabilitat al 'Control Plane' ja que l'application-controller s'executarà als clústers gestionats,
+  i el Principal gestionarà els recursos d'Aplicació en lloc de l'application-controller.
+stp_desc_16: |
+  Finalment, podem crear la configuració de l'Agent al Principal.
+
+  ℹ️ NOTA: Els camps 'username' i 'password' són requerits per la comanda, però en realitat no s'utilitzen; aquests paràmetres s'eliminaran en una futura versió.
+stp_desc_17: |
+  ✅ Hem completat la instal·lació del Principal, ara instal·lem l'Agent al clúster gestionat.
+
+stp_desc_18: "Accediu al clúster 'managed' (clúster spoke) utilitzant la comanda oc."
+stp_desc_19: "Creeu el projecte per a l'Operador OpenShift GitOps."
+stp_desc_20: "Instal·leu l'Operador OpenShift GitOps."
+stp_desc_21: "Verifiqueu que tots els pods de GitOps estiguin en execució."
+stp_desc_22: "Creeu el projecte 'argocd'"
+stp_desc_23: |
+  Creeu la instància 'argocd'.
+  Espereu fins que el pod de l'operador estigui a punt i després desplegueu la instància argocd per donar suport a l'Agent.
+stp_desc_24: |
+  Verifiqueu que tots els pods estiguin en execució.
+
+  ℹ️ NOTA: Aquí no hi ha pod de servidor ja que la interfície d'usuari (UI) i l'API són proporcionades pel pod del servidor al clúster Control Plane
+  que vam instal·lar prèviament.
+stp_desc_25: "Canvieu al namespace argocd."
+stp_desc_26: "Canvieu el nom del context a 'managed-cluster'."
+stp_desc_27: "Creeu la contrasenya de Redis novament perquè l'Agent pugui accedir a Redis."
+stp_desc_28: "I després executeu la següent comanda per instal·lar el PKI de l'Agent."
+stp_desc_29: |
+  Ara haureu de propagar el certificat CA emmagatzemat al secret 'argocd-agent-ca' al Principal al
+  clúster gestionat.
+stp_desc_30: "Assegureu-vos que la variable SUBDOMAIN segueixi establerta per al clúster Control Plane on resideix el Principal."
+stp_desc_31: |
+  Desplegueu l'Agent al clúster remot.
+
+  ℹ️ NOTA: Si no teniu 'envsubst' disponible, elimineu-lo de la llista de comandes amb pipe i editeu manualment
+  el fitxer 'managed/managed-cluster/20-agent/10-base/kustomization.yaml' perquè la variable '$SUBDOMAIN' apunti
+  a la ruta (Route) del Principal al clúster Control Plane abans d'executar la comanda següent.
+
+stp_desc_32: |
+  Espereu un parell de minuts i després verifiqueu els logs del pod de l'agent per assegurar-vos que no hi hagi errors inesperats:
+
+stp_desc_33: |
+  Valideu que l'AppProject managed-cluster hagi estat propagat del Principal a l'Agent.
+  ⚠️ Si l'AppProject no apareix, verifiqueu els logs del pod de l'Agent al Clúster Gestionat i els logs al
+  pod Principal al Control Plane a la recerca d'errors.
+
+stp_desc_34: |
+  ✅ Hem completat la instal·lació de l'Agent al clúster gestionat, ara despleguem una Aplicació de prova.
+stp_desc_35: "Torneu al context principal."
+stp_desc_36: |
+  L'Agent Argo CD utilitza 'Apps-in-Any-Namespace' per mapejar Aplicacions a clústers, de manera que desplegarem
+  una aplicació d'exemple al namespace 'managed-cluster' al Principal.
+  Valideu l'Aplicació que desplegarem.
+  Observeu que 'spec.destination.name' està configurat com a 'managed-cluster'.
+stp_desc_37: "Desplegueu l'aplicació."
+stp_desc_38: |
+  Verifiqueu que l'Aplicació s'hagi sincronitzat i estigui saludable; això pot trigar un parell de minuts.
+
+  ℹ️ NOTA: També podeu verificar això a la 'Argo CD UI' al Principal.
+stp_desc_39: "Torneu al 'managed-cluster'."
+stp_desc_40: "Valideu que els recursos de l'Aplicació 'bgd' s'hagin desplegat al 'managed-cluster'."
+stp_desc_finish: |
+  ✅ Hem realitzat un desplegament bàsic, no productiu, del nou Agent Argo CD utilitzant el mode Gestionat de l'Agent.
+  🎉 Assistent completat amb èxit.
+
+  Aquest assistent es basa en el {url_blog}.
+  Gràcies a Gerald Nunn per escriure aquesta excel·lent publicació de blog i proporcionar la base per a aquest assistent PoC!
+welcome_msg: "🚀  Assistent PoC: Mode Gestionat de l'Agent ArgoCD"
+next_option: "Següent (Executar)"
+dryrun_option: "Següent (Simulació)"
+previous_option: "Anterior (Tornar)"
+cancel_option: "Cancel·lar (Sortir)"
+finish_action: "Finalitzar"
+action_prompt: "Seleccioneu una acció:"
+welcome_title: "🚀 Assistent PoC: Mode Gestionat de l'Agent ArgoCD 🚀"
+breadcrumb_base: "Camí >"
+status_msg_init: "Benvingut a l'Assistent PoC."
+status_label: "Estat:"
+step_label: "Pas"
+description_label: "Descripció:"
+command_label: "Comanda:"
+executing_message: "EXECUTANT:"
+step_complete_message: "✅ Pas {step_num} '{step_name}' Completat. Llest per al següent pas."
+completed_wizard_msg: "WIZARD COMPLETAT. Tots els passos executats amb èxit!"
+break_wizard_msg: "❌ Interrupció detectada. Assistent avortat!"
+step_by_step: "Pas {step_num} de {total_steps}"
+wizard_cancel_by_user: "Assistent cancel·lat per l'usuari!"
+back_step: "Tornant al pas {step_index}."
+label_executing_dryrun: "EXECUCIÓ EN MODE SIMULACIÓ"
+url_blog: "https://developers.redhat.com/blog/2025/10/06/using-argo-cd-agent-openshift-gitops"
+session_loaded_message: "Sessió Carregada: Reprenent des del pas {step}."
