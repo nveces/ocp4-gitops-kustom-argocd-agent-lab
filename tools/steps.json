@@ -64,7 +64,7 @@
         "can_dryrun": true,
         "script": "01-cluster-setup.sh",
         "params": "-f create_issue_principal",
-        "display_lines": "73,77"
+        "display_lines": "83,86"
     },
     {
         "name": "stp_name_10",
@@ -242,7 +242,7 @@
         "cluster": "managed",
         "script": "01-cluster-setup.sh",
         "params": "-f deploy_agent_on_remote_cluster",
-        "display_lines": "101,103"
+        "display_lines": "101,108"
     },
     {
         "name": "stp_name_32",

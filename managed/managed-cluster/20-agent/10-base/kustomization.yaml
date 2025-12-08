@@ -17,7 +17,7 @@ patches:
         value: managed
       - op: replace
         path: /data/agent.server.address
-        value: argocd-agent-principal-argocd.apps.cluster-pxkrs.dynamic.redhatworkshops.io
+        value: argocd-agent-principal-argocd.apps.$SUBDOMAIN
       - op: replace
         path: /data/agent.namespace
         value: argocd

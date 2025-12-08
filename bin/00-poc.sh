@@ -1,10 +1,13 @@
 #!/bin/bash
 #
 # ============================================================
+# Based on the https://developers.redhat.com/blog/2025/10/06/using-argo-cd-agent-openshift-gitops
+#              (Created by Gerald Nunn https://developers.redhat.com/author/gerald-nunn)
 #
-#
+# See also: https://github.com/gitops-examples/openshift-gitops-agent
+#           https://github.com/argoproj-labs/argocd-agent/
 # ============================================================
-# Description---:
+# Description---: Start a Proof of Concept for Argo CD Agent with OpenShift GitOps
 #
 #
 # ============================================================
