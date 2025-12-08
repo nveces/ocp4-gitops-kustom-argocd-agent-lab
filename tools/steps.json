@@ -48,7 +48,7 @@
         "can_dryrun": true,
         "script": "01-cluster-setup.sh",
         "params": "-f switch_context_principal",
-        "display_lines": "61,66"
+        "display_lines": "60,69"
     },
     {
         "name": "stp_name_08",
@@ -64,7 +64,7 @@
         "can_dryrun": true,
         "script": "01-cluster-setup.sh",
         "params": "-f create_issue_principal",
-        "display_lines": "83,86"
+        "display_lines": "71,74"
     },
     {
         "name": "stp_name_10",
@@ -94,7 +94,7 @@
         "can_dryrun": true,
         "script": "01-cluster-setup.sh",
         "params": "-f create_secret_argocd_redis",
-        "display_lines": "88,90"
+        "display_lines": "76,78"
     },
     {
         "name": "stp_name_14",
@@ -117,7 +117,7 @@
         "can_dryrun": true,
         "script": "01-cluster-setup.sh",
         "params": "-f create_agent_on_principal",
-        "display_lines": "92,99"
+        "display_lines": "80,87"
     },
     {
         "name": "stp_name_17",
@@ -198,7 +198,7 @@
         "cluster": "managed",
         "script": "01-cluster-setup.sh",
         "params": "-f switch_context_managed_cluster",
-        "display_lines": "70,81"
+        "display_lines": "89,99"
     },
     {
         "name": "stp_name_27",
@@ -208,7 +208,7 @@
         "cluster": "managed",
         "script": "01-cluster-setup.sh",
         "params": "-f create_secret_argocd_redis",
-        "display_lines": "88,90"
+        "display_lines": "76,78"
     },
     {
         "name": "stp_name_28",
@@ -242,7 +242,7 @@
         "cluster": "managed",
         "script": "01-cluster-setup.sh",
         "params": "-f deploy_agent_on_remote_cluster",
-        "display_lines": "101,108"
+        "display_lines": "101,114"
     },
     {
         "name": "stp_name_32",

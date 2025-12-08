@@ -1,11 +1,13 @@
 #!/bin/bash
 #
 # ============================================================
+# Based on the https://developers.redhat.com/blog/2025/10/06/using-argo-cd-agent-openshift-gitops
+#              (Created by Gerald Nunn https://developers.redhat.com/author/gerald-nunn)
 #
-#
+# See also: https://github.com/gitops-examples/openshift-gitops-agent
+#           https://github.com/argoproj-labs/argocd-agent/
 # ============================================================
-# Description---:
-#
+# Description ---: Cluster Setup Functions for Argo CD Agent with OpenShift GitOps
 #
 # ============================================================
 #
@@ -53,9 +55,9 @@ handle_error() {
 # -----------------------------------------------
 # 1. FUNCIONES A LLAMAR
 # -----------------------------------------------
-
+# msg "Parameters: $@"
+# oc config rename-context argocd/<cluster-api>/<user> principal
 function switch_context_principal() {
-    # msg "Parameters: $@"
     oc project argocd
     # Reset any existing 'principal' context:
     oc config get-contexts | grep -w "principal" > /dev/null 2>&1
@@ -64,20 +66,6 @@ function switch_context_principal() {
         oc config delete-context principal
     fi
     oc config rename-context $(oc whoami -c) principal
-    #oc config rename-context argocd/<cluster-api>/<user> principal
-}
-
-function switch_context_managed_cluster(){
-    oc project argocd
-    # Reset any existing 'managed-cluster' context:
-    context_name="managed-cluster"
-    oc config get-contexts | grep -w "${context_name}" > /dev/null 2>&1
-    if [ $? -eq 0 ]; then
-        msg "Context 'managed-cluster' exists . Deleting..."
-        oc config delete-context ${context_name}
-    fi
-    oc config rename-context $(oc whoami -c) ${context_name}
-    #oc config rename-context argocd/<cluster-api>/<user> ${context_name}
 }
 
 function create_issue_principal() {
@@ -98,8 +86,31 @@ function create_agent_on_principal() {
     --resource-proxy-password bar
 }
 
+function switch_context_managed_cluster(){
+    oc project argocd
+    # Reset any existing 'managed-cluster' context:
+    context_name="managed-cluster"
+    oc config get-contexts | grep -w "${context_name}" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+        msg "Context 'managed-cluster' exists . Deleting..."
+        oc config delete-context ${context_name}
+    fi
+    oc config rename-context $(oc whoami -c) ${context_name}
+}
+
 function deploy_agent_on_remote_cluster() {
-    kustomize build managed-cluster/agent/base | envsubst | oc apply -f -
+    # kustomize build managed-cluster/agent/base | envsubst | oc apply -f -
+    oc config use-context principal
+    AGENT_BASE_DIR="${V_ADMIN_DIR}/../managed/managed-cluster/20-agent/10-base"
+    msg "Applying Argo CD Agent configuration from: ${AGENT_BASE_DIR}"
+    KUSTOM_TPL="${AGENT_BASE_DIR}/kustomization.yaml.tpl"
+    KUSTOM_YML="${AGENT_BASE_DIR}/kustomization.yaml"
+    export SUBDOMAIN=$(oc get dns cluster -o jsonpath='{.spec.baseDomain}')
+    msg "Principal DNS: argocd-agent-principal-argocd.apps.${SUBDOMAIN}"
+    envsubst < ${KUSTOM_TPL} > ${KUSTOM_YML}
+    oc config use-context managed-cluster
+    msg "oc apply -k ${AGENT_BASE_DIR}"
+    oc apply -k ${AGENT_BASE_DIR}
 }
 
 # -----------------------------------------------
