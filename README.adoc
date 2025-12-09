@@ -29,6 +29,10 @@ $ oc delete sub openshift-gitops-operator -n openshift-operators
 $ oc get csv -n openshift-operators | grep gitops
 $ oc delete csv openshift-gitops-operator.v1.17.2 -n openshift-operators
 
+$ oc get deployment -n openshift-gitops
+$ oc delete deployment gitops-plugin -n openshift-gitops
+$ oc delete deployment cluster -n openshift-gitops
+
 ////
 
 :include-missing: skip
@@ -116,7 +120,33 @@ You must ensure the following tools are installed and configured in your local e
 * **Bash** : Required to execute the bootstrap script (`bin/00-poc.sh`) and auxiliary functions.
 * **`oc` CLI** (OpenShift Client): Required for all interactions with the clusters.
 * **`envsubst`**: Required for substituting environment variables within Bash pipes.
-* **`argocd`** - https://github.com/argoproj-labs/argocd-agent[window=_blank].
+* **`argocd-agentctl`** - https://github.com/argoproj-labs/argocd-agent[window=_blank].
+
+
+To install `argocd-agentctl`, you can use the following script:
+
+* Go to: https://github.com/argoproj-labs/argocd-agent/releases[window=_blank]
+* Download `argocd-agentctl_linux-amd64`.
+* Rename the file:
+
+[source,shell]
+----
+$ mv argocd-agentctl_linux-amd64 argocd-agentctl
+----
+
+* Make it executable:
+[source,shell]
+----
+$ chmod 774 argocd-agentctl
+----
+
+* Move it to a directory in your `${PATH}`, for example `/usr/local/sbin/` or `${HOME}/.local/bin/`:
+
+[source,shell]
+----
+$ sudo mv argocd-agentctl /usr/local/sbin/
+----
+
 
 ==== Python Requirements and Dependencies
 
