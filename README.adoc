@@ -161,7 +161,7 @@ You can install the Python dependencies using:
 
 [source,bash]
 ----
-$ pip install rich inquierer PyYAML
+$ pip install rich inquirer PyYAML
 ----
 ////
 Assuming you have generated or created a requirements.txt file
