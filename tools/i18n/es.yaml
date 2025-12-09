@@ -39,7 +39,6 @@ stp_name_38: "Verificar Aplicación"
 stp_name_39: "Cambiar a contexto gestionado"
 stp_name_40: "Validar Aplicación"
 stp_name_finish: "Completado"
-
 stp_desc_01: "Acceda al clúster 'control-plane' (clúster hub) utilizando el comando oc."
 stp_desc_02: "Cree el namespace para el Operador OpenShift GitOps."
 stp_desc_03: |

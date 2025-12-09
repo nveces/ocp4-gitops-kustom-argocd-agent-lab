@@ -1,0 +1,50 @@
+// --------------------------------
+// Document Information
+// This document-vars.adoc file contains mainly static/routine variables for the README.adoc
+// --------------------------------
+:toc-title: Table of Contents
+
+:ocp_v: 4.x
+:ocp: OpenShift Container Platform
+:ocp_l: {ocp} {ocp_v}
+:ocp_s: OCP {ocp_v}
+:ocp_a: OCP
+
+:gitops: OpenShift GitOps
+:gitops_v: 1.18
+:gitops_l: {gitops} {gitops_v}
+:gitops_s: GitOps {gitops_v}
+:agent: Argo CD Agent
+:agent_v: 0.4.1
+:agent_l: {agent} {agent_v}
+:agent_s: Agent {agent_v}
+:argocd_v: 3.1.6 GA
+:argocd: Argo CD
+:argocd_l: {argocd} {argocd_v}
+:argocd_s: ArgoCD {argocd_v}
+
+:subject: Wizard PoC {agent} Managed Mode on {ocp_s}
+:description: Wizard PoC {agent_l} Managed Mode on {ocp_s}
+
+:imagesdir: doc/images/
+
+:doctype: book
+:listing-caption: Listing
+:toc: left
+:toclevels: 4
+:sectnumlevels: 6
+:numbered:
+:chapter-label:
+:icons: font
+
+:revnumber: {gitdate}
+
+// --------------------------------
+// Other Vars
+// --------------------------------
+:project_name: ocp4-gitops-kustom-argocd-agent-lab
+:git_base: https://github.com/nveces
+:git_repo: {git_base}/{project_name}
+
+
+// EOF

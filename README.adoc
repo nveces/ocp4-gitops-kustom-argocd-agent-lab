@@ -1,0 +1,240 @@
+////
+
+$ oc apply -k managed/control-plane/base
+
+https://access.redhat.com/solutions/5556071 -  How to get only the current project name using oc CLI without other messages
+
+
+echo "// EOF" >> README.adoc
+
+git init --initial-branch=main
+git config --local user.email "nvece@gmail.com"
+git config --local user.name "Nveces"
+git branch -M main
+git remote add origin git@github.com:nveces/ocp4-gitops-kustom-argocd-agent-lab.git
+git pull origin main --allow-unrelated-histories
+
+git add README.adoc
+git add .
+git commit -m "first commit"
+git push -u origin main
+
+[source,shell,options=nowrap]
+[source,shell,subs="attributes,verbatim,quotes",options=nowrap]
+
+
+If you use "OpenShift GitOps Blank Environment" from https://catalog.demo.redhat.com/catalog, first of all you need to uninstall previous OpenShift GitOps Operator and OpenShift GitOps instance:
+$ oc delete argocd openshift-gitops -n openshift-gitops
+$ oc delete sub openshift-gitops-operator -n openshift-operators
+$ oc get csv -n openshift-operators | grep gitops
+$ oc delete csv openshift-gitops-operator.v1.17.2 -n openshift-operators
+
+////
+
+:include-missing: skip
+
+ifndef::env-github[]
+include::doc/document-vars.adoc[leveloffset=+0]
+endif::[]
+
+ifdef::env-github[]
+:ocp_v: 4.x
+:ocp: OpenShift Container Platform
+:ocp_l: {ocp} {ocp_v}
+:ocp_s: OCP {ocp_v}
+:ocp_a: OCP
+
+:gitops: OpenShift GitOps
+:gitops_v: 1.18
+:gitops_l: {gitops} {gitops_v}
+:gitops_s: GitOps {gitops_v}
+:agent: Argo CD Agent
+:agent_v: 0.4.1
+:agent_l: {agent} {agent_v}
+:agent_s: Agent {agent_v}
+:argocd_v: 3.1.6 GA
+:argocd: Argo CD
+:argocd_l: {argocd} {argocd_v}
+:argocd_s: ArgoCD {argocd_v}
+
+:project_name: ocp4-gitops-kustom-argocd-agent-lab
+
+:imagesdir: https://raw.githubusercontent.com/nveces/{project_name}/refs/heads/main/doc/images/
+
+:subject: Wizard PoC {agent} Managed Mode on {ocp_s}
+:description: Wizard PoC {agent_l} Managed Mode on {ocp_s}
+
+:toc:
+:toc-title: Índice
+:toclevels: 3
+:doctype: book
+:sectnums:
+:numbered:
+:icons: font
+:source-highlighter: rouge
+:chapter-label:
+:revnumber: {gitdate}
+:listing-caption: Listing
+
+endif::[]
+
+= {subject}
+
+[sidebar]
+{description} [.blue .small]##*[Created: 2025-11-25]*##
+
+[sidebar]
+[.green .normal]##*Updated: 2025-12-09*##
+
+
+toc::[]
+
+
+== 🚀 PoC Wizard: ArgoCD Agent Managed Mode
+
+This Assistant (Wizard) is a **Proof of Concept (PoC)** designed to guide the user through the deployment and configuration of the **ArgoCD Agent** in **Managed Mode**, involving the interaction between a *control-plane* (hub) cluster and a *managed* (spoke) cluster on OpenShift.
+
+The tool is built using **Python** (for the interactive interface and flow management) and executes **Bash/CLI** commands for resource provisioning.
+
+This Wizard aims to simplify the complex process of setting up *ArgoCD Agent* in Managed Mode, providing step-by-step guidance, automated configurations, and best practices.
+
+NOTE: This wizard is based on the blog post by *https://developers.redhat.com/author/gerald-nunn[Gerald Nunn,window=_blank]* https://developers.redhat.com/blog/2025/10/06/using-argo-cd-agent-openshift-gitops[window=_blank].
+
+
+=== 🎯 Requirements
+
+To successfully run the Wizard, you must ensure the following requeriments:
+
+* A running Openshift cluster designated as the *hub* or *control-plane*.
+* One or more Kuberntes clusters designated as *spoke* or *managed*.
+
+
+==== CLI Tools and System Requirements
+
+You must ensure the following tools are installed and configured in your local environment:
+
+* **Bash** : Required to execute the bootstrap script (`bin/00-poc.sh`) and auxiliary functions.
+* **`oc` CLI** (OpenShift Client): Required for all interactions with the clusters.
+* **`envsubst`**: Required for substituting environment variables within Bash pipes.
+* **`argocd`** - https://github.com/argoproj-labs/argocd-agent[window=_blank].
+
+==== Python Requirements and Dependencies
+
+* **Python 3.x**: Required to run the interactive wizard script (`bin/00-poc.py`).
+* **`pip`**: Python package manager to install required libraries.
+* **Python Libraries:** The Wizard relies on the following libraries for the command-line interface, configuration loading, and internationalization:
+** `rich` (For stylized terminal output) https://github.com/Textualize/rich[window=_blank].
+** `inquirer` (For interactive data entry and menus) https://github.com/magmax/python-inquirer[window=_blank].
+** `PyYAML` (For loading I18N localization and configuration files) https://pyyaml.org/[window=_blank].
+
+You can install the Python dependencies using:
+
+[source,bash]
+----
+$ pip install rich inquierer PyYAML
+----
+////
+Assuming you have generated or created a requirements.txt file
+$ cat > requirements.txt << EOF
+rich
+PyYAML>=6.0.1
+inquirer
+EOF
+
+$ pip install -r requirements.txt
+////
+
+
+== Project Structure
+
+[source,text]
+----
+ocp4-gitops-kustom-argocd-agent-lab/
+├── bin/
+|   ├── 00-poc.sh
+|   └── 01-setup-control-plane.sh
+├── doc/
+│   └── images/
+├── managed/
+│   ├── control-plane/             # Control-plane cluster configuration
+│   │   ├── 10-base/               # Namespaces base
+│   │   ├── 20-principal/          # ArgoCD Principal Server
+│   │   │   ├── 10-argocd.yml
+│   │   │   ├── 20-svc-proxy-service.yml
+│   │   │   ├── 30-app-project.yml
+│   │   │   ├── 40-route.yml
+│   │   │   └── kustomization.yaml
+│   │   └── 30-apps/
+│   │       └── managed-cluster/   # Applications for the managed cluster
+│   │           └── 10-apps-bgd.yml
+│   └── managed-cluster/           # Managed cluster configuration
+│       ├── 10-argocd/             # ArgoCD con server deshabilitado
+│       │   ├─ 10-base/
+│       │   |  ├── 10-ns-argocd-agent.yml
+│       │   |  └── kustomization.yaml
+│       │   └─ 20-argocd-instance/
+│       |      ├── 20-argocd.yml   # ArgoCD Instance with controller disabled
+│       |      └── kustomization.yaml
+│       └── 20-agent/              # ArgoCD Agent
+│           └── 10-base/
+│               ├── 10-agent-redis-networkpolicy.yml
+│               ├── 20-application-controller-cluster-admin-role.yml
+│               └── kustomization.yaml.tpl
+├── operator/                     # Operator GitOps installation
+│   ├── 10-base/
+│   |   ├── 10-ns-project.yml
+│   |   └── kustomization.yaml
+│   └── 20-operator/
+│       ├── 10-og-gitops.yml
+│       ├── 20-sub-gitops.yml
+│       └── kustomization.yaml
+└── tools/
+    ├── i18n/
+    ├── 10-start-poc.py
+    └── steps.json
+----
+
+
+== Starting the Wizard
+
+[source,shell,subs="attributes",options=nowrap]
+----
+$ cd {project_name}/bin
+$ ./00-poc.sh
+----
+
+image::wizards_poc_argocd_agent_01.png[link={imagesdir}wizards_poc_argocd_agent_01.png",alt="Wizard PoC ArgoCD Agent Managed Mode - Step 1",window=_blank,width=75%,pdfwidth=75%, align="center"]
+
+
+=== The log file
+
+The wizard will create a log file `/tmp/10-start-poc.log` where you can monitor the progress and debug information.
+
+[source,shell,options=nowrap]
+----
+$ tail -f /tmp/10-start-poc.log
+[2025-12-05 10:53:48] [DEBUG] -- __main__ -- 10-start-poc-- Executing command next --:Return code: 0
+oc login -u <cluster-admin-username> -p <cluster-admin-password> <control-plane-cluster-api-url> or oc login --token=<token-admin-user> --server=<control-plane-cluster-api-url>
+.../...
+----
+
+
+== References
+
+* https://developers.redhat.com/blog/2025/10/06/using-argo-cd-agent-openshift-gitops[window=_blank]
+* https://www.redhat.com/en/blog/multi-cluster-gitops-argo-cd-agent-openshift-gitops[window=_blank]
+* https://argocd-agent.readthedocs.io/latest/getting-started/openshift/[window=_blank]
+* https://github.com/gitops-examples/openshift-gitops-agent/tree/main[window=_blank]
+* https://docs.redhat.com/es/documentation/red_hat_openshift_gitops/1.18/[windows=_blank]
+* https://docs.redhat.com/es/documentation/red_hat_openshift_gitops/1.18/html-single/release_notes/index[windows=_blank]
+
+
+
+
+The features are marked with the following statuses:
+
+* *TP*: Technology Preview
+* *GA*: General Availability
+* *NA*: Not Applicable
+
+// EOF
